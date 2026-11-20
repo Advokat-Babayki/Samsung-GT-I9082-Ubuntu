@@ -16,3 +16,6 @@ refs/
 out/
 .repo/
 ccache/
+flash_log*.txt
+/pit.txt
+i9082_firmware.bin
