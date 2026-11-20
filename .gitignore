@@ -1,0 +1,16 @@
+# stock firmware / flash artifacts (never commit)
+*.zip
+*.img
+*.img.ext4
+*.bin
+*.tar
+*.tar.md5
+*.pit
+flash/
+I9082XXAMAC_OLBAMA4/
+*.log
+
+# build output
+out/
+.repo/
+ccache/
