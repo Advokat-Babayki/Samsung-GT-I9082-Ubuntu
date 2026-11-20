@@ -65,6 +65,11 @@ case "${1:-}" in
                  CONFIG_IPC_NS CONFIG_CGROUP_PERF; do
         grep -q "^$opt=y" "$DEFCONF" || echo "$opt=y" >> "$DEFCONF"
       done
+      # userdata has no filesystem label on this device; tell the vivid initrd
+      # where it is (fstab.capri_ss_baffin: /data = mmcblk0p21)
+      BOARD_CFG=device/samsung/i9082/BoardConfig.mk
+      grep -q 'datapart=' "$BOARD_CFG" || \
+        sed -i 's|^BOARD_KERNEL_CMDLINE := \(.*\)|BOARD_KERNEL_CMDLINE := \1 datapart=/dev/block/mmcblk0p21|' "$BOARD_CFG"
       source build/envsetup.sh
       lunch aosp_i9082-userdebug
       mka bootimage
