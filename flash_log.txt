@@ -1,0 +1,58 @@
+Heimdall v2.2.2
+
+Copyright (c) 2010-2017 Benjamin Dobell, Glass Echidna https://glassechidna.com.au
+Copyright (c) 2021-2024 Henrik Grimler
+This software is provided free of charge. Copying and redistribution is encouraged.
+
+Initialising connection...
+Detecting device...
+Claiming interface...
+Initialising protocol...
+Protocol initialisation successful.
+
+Beginning session...
+
+Some devices may take up to 2 minutes to respond.
+Please be patient!
+
+Session begun.
+
+Downloading device's PIT file...
+PIT file download successful.
+
+Uploading PARAM
+0%100%
+PARAM upload successful
+
+Uploading DTS
+0%100%
+DTS upload successful
+
+Uploading VC-Firmware
+0%24%49%74%98%100%
+VC-Firmware upload successful
+
+Uploading KERNEL
+0%21%42%64%85%100%
+KERNEL upload successful
+
+Uploading RECOVERY
+0%18%37%55%74%93%100%
+RECOVERY upload successful
+
+Uploading system
+0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99%100%
+system upload successful
+
+Uploading userdata
+0%1%2%4%5%7%8%10%11%13%14%15%17%18%20%21%23%24%26%27%28%30%31%33%34%36%37%39%40%41%43%44%46%47%49%50%52%53%54%56%57%59%60%62%63%65%66%67%69%70%72%73%75%76%78%79%80%82%83%85%86%88%89%91%92%94%95%96%98%99%100%
+userdata upload successful
+
+Uploading modem
+0%5%11%17%23%28%34%40%46%52%57%63%69%75%81%86%92%98%100%
+ERROR: Failed to confirm end of file transfer sequence!
+ERROR: modem upload failed!
+
+Ending session...
+Releasing device interface...
+

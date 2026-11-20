@@ -8,6 +8,8 @@
 *.pit
 flash/
 I9082XXAMAC_OLBAMA4/
+work/
+refs/
 *.log
 
 # build output

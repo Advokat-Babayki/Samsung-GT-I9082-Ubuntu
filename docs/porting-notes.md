@@ -2,51 +2,92 @@
 
 ## Status
 
-Research. Nothing booted yet.
+Bring-up. Source tree syncing. Nothing booted yet.
+
+## Chosen architecture: legacy Ubuntu Touch 15.04 (vivid)
+
+Modern Ubuntu Touch (16.04+/Halium) needs an Android 7.1+ base and a Halium device
+tree, neither of which exists for baffin. The legacy path matches the hardware and the
+available sources:
+
+| Part | Choice |
+|---|---|
+| Android base | `ubports/android` branch `ubp-5.1` (AOSP 5.1.1 + Ubuntu Touch additions) |
+| Device tree | `osas514/android_device_samsung_i9082` branch `aosp-5.1` |
+| Kernel | `osas514/android_kernel_samsung_i9082` branch `android-5.1` |
+| Vendor blobs | `speedbot/android_vendor_samsung_i9082` |
+| Ubuntu rootfs | vivid armhf rootfs from the UBports image server |
+| Install method | `rootstock-touch-install` over TWRP adb |
+
+Reference device tarballs were inspected to confirm the shape of a vivid port:
+`ubuntu-touch/stable/w7` (LG L90) and `devel_stable/hammerhead` (Nexus 5, Android
+5.1.1 LMY48W). Both ship:
+
+- `partitions/boot.img` — kernel + Ubuntu initramfs (generic userland, no device .ko files)
+- `partitions/recovery.img`
+- `system/var/lib/lxc/android/system.img` — Android container (stripped, ~110-135 MB)
+- `system/usr/local/bin/card_parameters_setter`, upstart jobs, udev rules
+
+The Android container image also carries `/boot/android-ramdisk.img` (the Android
+ramdisk, used by the Ubuntu initrd for fstab/hardware info) and `/ubuntu/*`
+(prebuilt libhybris/audio/udev bits from the `ubuntu/*` projects in the manifest).
+
+## Boot flow (vivid, "flipped" model)
+
+1. boot.img kernel starts the Ubuntu initramfs (`scripts/touch`).
+2. Initramfs finds the userdata partition (`datapart=` cmdline, else partition labels
+   `userdata|UDA|DATAFS|USERDATA`), fsck's it and loop-mounts `/data/ubuntu.img`
+   (ext2 image) as the rootfs.
+3. `/var/lib/lxc/android/system.img` is loop-mounted at `/android/system`, Android
+   ramdisk is extracted, Android fstab partitions mounted under `/android`.
+4. Upstart starts the LXC Android container; libhybris from the rootfs talks to the
+   Android HAL libs.
+
+Install via `rootstock-touch-install <rootfs.tar.gz> <android-system.img>`: it wipes
+`/data`, creates `/data/ubuntu.img`, unpacks the rootfs, drops the Android system
+image into `/var/lib/lxc/android/`, links `/data/system.img` and reboots.
+
+## Kernel requirements for LXC
+
+`ubports-boot/check-kernel-config` list. The i9082 `cyanogenmod_i9082_defconfig`
+(android-5.1 branch) is missing at least:
+
+- `CONFIG_CPUSETS`
+- `CONFIG_CGROUP_MEM_RES_CTLR`
+- `CONFIG_SYSVIPC`
+- `CONFIG_IPC_NS`
+- `CONFIG_CGROUP_PERF`
+
+These have to be enabled and the kernel rebuilt; without the cgroup/namespace
+controllers the Android container will not start.
 
 ## Feasibility evidence (2026-11-20)
 
 - UBports device list: no GT-I9082 / baffin entry. Forum answer: "there is no port for this device".
 - `system-image.ubports.com` publishes no baffin channel.
-- postmarketOS `samsung-baffin`: marked **not booting**, "What's working: Nothing", no mainline.
-- Stock firmware boots and MTP works after partial heimdall flash (modem upload failed at ~100%).
+- postmarketOS `samsung-baffin`: marked **not booting**, no mainline.
+- Legacy vivid images are still downloadable from `system-image.ubports.com`
+  (rootfs + device tarballs), so the vivid path has real material.
+- Stock Android 4.1.2/4.2.2 boots after the heimdall flash (modem upload failed at the
+  end, but the phone reaches MTP).
 
-## Candidate approaches
-
-### 1. Legacy libhybris (Ubuntu Touch 15.04 "vivid", pre-Halium)
-
-Base OS: CyanogenMod 12.1 (Android 5.1.1) device tree + kernel.
-Pros: matches the newest reasonably complete device trees (pawitp, k2wl).
-Cons: legacy build tooling is dead (phablet-tools, ubuntu-device-flash, old image server
-channels); hybris glue (libhybris, android-headers) must match the 5.1 vendor blobs.
-
-### 2. Halium 7.1 + UBports rootfs
-
-Needs a working Android 7.1 base (device tree, kernel, vendor blobs) for baffin.
-Pros: current UBports tooling and rootfs; lxc containers; installer support later.
-Cons: no AOSP 7.1 device tree exists publicly; kernel is 3.x; vendor blobs are Android 5.1.
-Halium 7.1 expects vendor blobs from a 7.1 system.
-
-Decision: TODO after source audit.
-
-## Sources found
+## Sources
 
 | Component | Repo / branch | Notes |
 |---|---|---|
-| device tree | pawitp/android_device_samsung_i9082 `cm-12.0` | most complete, by CM maintainer |
-| device tree | k2wl/android_device_samsung_baffin `master` | CM10.2, work in progress |
-| kernel | pawitp/android_kernel_samsung_i9082 `cm-12.0` | 3.0.31 lineage |
-| kernel | FraTeG/i9082_kernel `nougat` | 3.x with Nougat patches |
-| kernel | codekidX/android_kernel_samsung_i9082 | "frost" |
-| vendor | k2wl/android_vendor_samsung_i9082 | blobs extracted from stock |
-| TWRP | https://dl.twrp.me/i9082/ | recovery |
+| Android tree | ubports/android `ubp-5.1` | AOSP 5.1.1 + Ubuntu Touch additions |
+| device tree | osas514/android_device_samsung_i9082 `aosp-5.1` | product `aosp_i9082` |
+| kernel | osas514/android_kernel_samsung_i9082 `android-5.1` | 3.0.31 |
+| vendor | speedbot/android_vendor_samsung_i9082 `master` | 40 MB of blobs |
+| TWRP | https://dl.twrp.me/i9082/ | recovery for install/debug |
+| rootstock | ubports/rootstock-ng | `rootstock-touch-install` |
+| initramfs | ubports/ubports-boot | vivid initrd scripts |
 
 ## Hardware constraints
 
 - No fastboot. Flashing only via Odin/Heimdall (download mode).
-- Recovery partition can be overwritten with TWRP via heimdall `--RECOVERY`.
-- No UART. Diagnostics via adb (if kernel boots far enough) or TWRP.
-- 1 GB RAM: rootfs and container sizes must stay lean.
+- No UART. Diagnostics via adb (if the kernel gets that far) or TWRP.
+- 1 GB RAM: the Android container image and rootfs must stay lean.
 - Dual-SIM RIL (BCM28155) — expect radio issues on any port.
 
 ## Partition table

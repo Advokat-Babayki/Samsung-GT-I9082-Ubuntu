@@ -2,8 +2,12 @@
 
 Work-in-progress Ubuntu Touch (UBports) port.
 
-**Status: research / bring-up.** No ready-made port exists for this device; UBports has no
-official build and postmarketOS marks it as not booting. This repo is the port itself.
+**Status: bring-up.** Source tree syncing; nothing booted yet. There is no ready-made
+port for this device; UBports has no official build and postmarketOS marks it as not
+booting. This repo is the port itself.
+
+Approach: legacy Ubuntu Touch 15.04 (vivid) on an Android 5.1.1 container
+(`ubports/android` ubp-5.1 + i9082 device tree). Details in `docs/porting-notes.md`.
 
 ## Hardware
 
@@ -19,16 +23,18 @@ official build and postmarketOS marks it as not booting. This repo is the port i
 
 ## Approach
 
-TBD: Halium 7.1 port vs legacy libhybris (Ubuntu Touch 15.04). Decision and notes in
-`docs/`. The device has unofficial CyanogenMod 12.0/12.1 trees and a Nougat kernel branch,
-but no AOSP 7.x device tree yet.
+Legacy Ubuntu Touch 15.04 (vivid) on an Android 5.1.1 container. Base tree:
+`ubports/android` branch `ubp-5.1`, device tree `osas514/android_device_samsung_i9082`
+branch `aosp-5.1`. Halium 7.1 would need an AOSP 7.x device tree that does not exist.
 
 ## Sources
 
-- Device tree (CM 12.0): https://github.com/pawitp/android_device_samsung_i9082
-- Kernel (CM 12.0): https://github.com/pawitp/android_kernel_samsung_i9082
-- Kernel (Nougat branch): https://github.com/FraTeG/i9082_kernel
-- Vendor blobs: https://github.com/k2wl/android_vendor_samsung_i9082
+- Android tree: https://github.com/ubports/android (ubp-5.1)
+- Device tree (AOSP 5.1): https://github.com/osas514/android_device_samsung_i9082
+- Kernel (android-5.1): https://github.com/osas514/android_kernel_samsung_i9082
+- Vendor blobs: https://github.com/speedbot/android_vendor_samsung_i9082
+- Initramfs: https://github.com/ubports/ubports-boot
+- Rootstock: https://github.com/ubports/rootstock-ng
 
 ## Repo layout
 

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- Device: Samsung Galaxy Grand Duos GT-I9082 (baffin)
+       Base: UBports Android 5.1 (ubp-5.1), legacy Ubuntu Touch (vivid) port -->
+
+  <remote name="gh" fetch="https://github.com" />
+
+  <project path="device/samsung/i9082"
+           name="osas514/android_device_samsung_i9082"
+           remote="gh" revision="aosp-5.1" />
+
+  <project path="kernel/samsung/i9082"
+           name="osas514/android_kernel_samsung_i9082"
+           remote="gh" revision="android-5.1" />
+
+  <project path="vendor/samsung/i9082"
+           name="speedbot/android_vendor_samsung_i9082"
+           remote="gh" revision="master" />
+
+  <project path="packages/apps/SamsungServiceMode"
+           name="CyanogenMod/android_packages_apps_SamsungServiceMode"
+           remote="cm" revision="cm-12.1" />
+
+  <project path="hardware/samsung"
+           name="CyanogenMod/android_hardware_samsung"
+           remote="cm" revision="cm-12.1" />
+</manifest>
