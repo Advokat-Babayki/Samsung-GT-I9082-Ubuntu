@@ -47,6 +47,21 @@ Install via `rootstock-touch-install <rootfs.tar.gz> <android-system.img>`: it w
 `/data`, creates `/data/ubuntu.img`, unpacks the rootfs, drops the Android system
 image into `/var/lib/lxc/android/`, links `/data/system.img` and reboots.
 
+## Install notes
+
+- The UBports image-server rootfs tarball (`ubuntu-*.tar.xz`) stores everything under
+  a `system/` prefix; `rootstock-touch-install` expects the root at `./`. Repack with
+  `tar xf ... --strip-components=1` (as root, to keep device nodes) and gzip it.
+  `refs/vivid-preinstalled-touch-armhf.tar.gz` in the build tree is that repack.
+- `rootstock-touch-install` refuses to run without `make_ext4fs`, but that tool is only
+  used for sparse Android images. Ours is raw ext4, so `scripts/install.sh` strips the
+  check.
+- TWRP (3.0.2) must be flashed with heimdall first; it exposes adb as `recovery`, which
+  rootstock requires.
+- The Android system partition limits nothing here: the system image lands in
+  `/data/ubuntu.img` (rootfs ext2 image) at `/var/lib/lxc/android/system.img`.
+  A raw ext4 image is not shrunk by rootstock (the 120 MB repack only hits sparse images).
+
 ## Kernel requirements for LXC
 
 `ubports-boot/check-kernel-config` list. The i9082 `cyanogenmod_i9082_defconfig`
