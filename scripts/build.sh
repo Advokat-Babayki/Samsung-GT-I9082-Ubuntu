@@ -50,7 +50,7 @@ case "${1:-}" in
     fi
     mkdir -p .repo/local_manifests
     cp "$REPO_DIR/manifests/i9082.xml" .repo/local_manifests/
-    python3 repo sync -c -j4
+    python3 repo sync -c -j4 --no-tags
     ;;
 
   build)
@@ -67,7 +67,7 @@ case "${1:-}" in
       done
       source build/envsetup.sh
       lunch aosp_i9082-userdebug
-      mka ubports-boot
+      mka bootimage
       mka systemimage 2>&1 | tee build.log'
     ;;
 
