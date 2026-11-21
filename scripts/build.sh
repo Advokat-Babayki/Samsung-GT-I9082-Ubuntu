@@ -59,21 +59,44 @@ case "${1:-}" in
       export JAVA_HOME='"$JDK"'
       export PATH="$JAVA_HOME/bin:$PATH"
       cd /build
-      # LXC needs these controllers; the device defconfig does not have them
       DEFCONF=kernel/samsung/i9082/arch/arm/configs/cyanogenmod_i9082_defconfig
+      BOARD_CFG=device/samsung/i9082/BoardConfig.mk
+
+      # LXC needs these controllers; the device defconfig does not have them
       for opt in CONFIG_CPUSETS CONFIG_CGROUP_MEM_RES_CTLR CONFIG_SYSVIPC \
                  CONFIG_IPC_NS CONFIG_CGROUP_PERF; do
         grep -q "^$opt=y" "$DEFCONF" || echo "$opt=y" >> "$DEFCONF"
       done
+      # kernel must be LZMA: gzip zImage + vivid initrd does not fit the 8 MB boot partition
+      sed -i 's/^CONFIG_KERNEL_GZIP=y/# CONFIG_KERNEL_GZIP is not set/; s/^# CONFIG_KERNEL_LZMA is not set/CONFIG_KERNEL_LZMA=y/' "$DEFCONF"
+
       # userdata has no filesystem label on this device; tell the vivid initrd
       # where it is (fstab.capri_ss_baffin: /data = mmcblk0p21)
-      BOARD_CFG=device/samsung/i9082/BoardConfig.mk
       grep -q 'datapart=' "$BOARD_CFG" || \
         sed -i 's|^BOARD_KERNEL_CMDLINE := \(.*\)|BOARD_KERNEL_CMDLINE := \1 datapart=/dev/block/mmcblk0p21|' "$BOARD_CFG"
+      grep -q 'TARGET_KERNEL_SOURCE' "$BOARD_CFG" || \
+        echo 'TARGET_KERNEL_SOURCE := kernel/samsung/i9082' >> "$BOARD_CFG"
+      # the vivid initrd is in the tree; do not try to download it from Launchpad
+      grep -q 'BOARD_USE_LOCAL_INITRD' "$BOARD_CFG" || \
+        echo 'BOARD_USE_LOCAL_INITRD := true' >> "$BOARD_CFG"
+
+      # gcc 4.8 does not know -Wno-error=stringop-truncation (a gcc9+ flag)
+      sed -i 's/^LOCAL_CFLAGS := -Werror -Wno-error=stringop-truncation$/LOCAL_CFLAGS := -Werror/' \
+        system/core/mkbootimg/Android.mk
+      # ubports' subdir list omits audiopolicy, but the device audio HAL needs it
+      grep -q 'frameworks/av/services/audiopolicy' build/core/main.mk || \
+        sed -i 's|^\tframeworks/av/services/audioflinger \\$|\tframeworks/av/services/audioflinger \\\n\tframeworks/av/services/audiopolicy \\|' build/core/main.mk
+      # device/sample is not in the ubports manifest
+      sed -i 's|^PRODUCT_COPY_FILES := device/sample/etc/apns-full-conf.xml:system/etc/apns-conf.xml|# removed: device/sample is not part of the ubports manifest|' \
+        device/samsung/i9082/aosp_i9082.mk
+      # conflict markers are committed in the kernel branch
+      sed -i '/^<<<<<<< HEAD$/d; /^=======$/d; /^>>>>>>> android-3.0$/d' \
+        kernel/samsung/i9082/drivers/gpio/pca953x.c
+
       source build/envsetup.sh
       lunch aosp_i9082-userdebug
-      mka bootimage
-      mka systemimage 2>&1 | tee build.log'
+      make -j4 bootimage 2>&1 | tee build-boot.log
+      make -j4 systemimage 2>&1 | tee build-system.log'
     ;;
 
   *)

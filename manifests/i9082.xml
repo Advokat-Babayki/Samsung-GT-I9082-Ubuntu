@@ -18,10 +18,10 @@
            remote="gh" revision="master" />
 
   <project path="packages/apps/SamsungServiceMode"
-           name="CyanogenMod/android_packages_apps_SamsungServiceMode"
-           remote="cm" revision="cm-12.1" />
+           name="LineageOS/android_packages_apps_SamsungServiceMode"
+           remote="gh" revision="cm-12.1" />
 
   <project path="hardware/samsung"
-           name="CyanogenMod/android_hardware_samsung"
-           remote="cm" revision="cm-12.1" />
+           name="LineageOS/android_hardware_samsung"
+           remote="gh" revision="cm-12.1" />
 </manifest>

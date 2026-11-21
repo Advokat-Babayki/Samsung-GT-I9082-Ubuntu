@@ -62,6 +62,25 @@ image into `/var/lib/lxc/android/`, links `/data/system.img` and reboots.
   `/data/ubuntu.img` (rootfs ext2 image) at `/var/lib/lxc/android/system.img`.
   A raw ext4 image is not shrunk by rootstock (the 120 MB repack only hits sparse images).
 
+## Build fixes applied
+
+The tree needs these changes (all done by `scripts/build.sh`):
+
+- `mkbootimg/Android.mk`: drop `-Wno-error=stringop-truncation` (gcc 9+ flag, host gcc is 4.8).
+- `build/core/main.mk`: add `frameworks/av/services/audiopolicy` to the subdir list; ubports'
+  list omits it while the device audio HAL needs `libaudiopolicymanagerdefault`.
+- `aosp_i9082.mk`: drop the `device/sample/etc/apns-full-conf.xml` copy; `device/sample`
+  is not in the ubports manifest.
+- Kernel `cyanogenmod_i9082_defconfig`: enable LXC controllers + switch to `CONFIG_KERNEL_LZMA`.
+  The gzip zImage plus the 4.3 MB vivid initrd is 9.2 MB, over the 8 MB boot partition.
+- Kernel `drivers/gpio/pca953x.c`: the upstream branch has committed merge-conflict markers.
+- `BoardConfig.mk`: `TARGET_KERNEL_SOURCE`, `BOARD_USE_LOCAL_INITRD`, `datapart=`.
+- Host tools build 32-bit: `gcc-4.8-multilib`/`g++-4.8-multilib` and `cpio` must be installed.
+
+Also needed on a fresh sync: the ubports tree arrived with unresolved merges (conflict
+markers) in `build/`, `frameworks/native`, `frameworks/av`, `system/core`; reset each
+project to its `ubp/ubp-5.1` ref.
+
 ## Kernel requirements for LXC
 
 `ubports-boot/check-kernel-config` list. The i9082 `cyanogenmod_i9082_defconfig`
