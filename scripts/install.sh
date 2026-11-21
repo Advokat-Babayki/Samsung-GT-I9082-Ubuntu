@@ -32,8 +32,14 @@ case "${1:-}" in
     done
     # rootstock demands make_ext4fs even though it is only used for sparse
     # images; ours is a raw ext4 image, so that branch never runs.
-    sed 's/\[ ! \$(which make_ext4fs) \] || //' "$ROOTSTOCK" > "$TREE/rootstock-install-patched"
+    # It also stages the rootfs tarball in /recovery, which does not exist in
+    # TWRP; stage it on /data instead.
+    sed -e 's/\[ ! \$(which make_ext4fs) \] || //' \
+        -e 's|/recovery/|/data/rootstock/|g' \
+        -e 's|/recovery\$|/data/rootstock|g' \
+        "$ROOTSTOCK" > "$TREE/rootstock-install-patched"
     chmod +x "$TREE/rootstock-install-patched"
+    adb shell mkdir -p /data/rootstock
     "$TREE/rootstock-install-patched" "$ROOTFS" "$SYSTEM"
     ;;
 
